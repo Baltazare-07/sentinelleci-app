@@ -95,6 +95,10 @@ app.post('/api/signalements', async (req, res) => {
 
 // Pour Render - utiliser le port fourni par l'environnement
 const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Backend API sur le port ${PORT}`);
+    console.log(`🚀 Backend SentinelleCI démarré`);
+    console.log(`📡 Port: ${PORT}`);
+    console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`✅ API prête à recevoir des requêtes`);
 });
