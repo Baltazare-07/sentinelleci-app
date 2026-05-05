@@ -1,26 +1,14 @@
 #!/bin/bash
 
-echo "========================================="
-echo "🚀 Démarrage de SentinelleCI"
-echo "========================================="
+# Démarrer Nginx
+service nginx start
 
-# Démarrer le backend Node.js en arrière-plan
-echo "📡 Démarrage du backend sur le port 3001..."
+# Démarrer le backend
 cd /app/backend
 node app.js &
-BACKEND_PID=$!
 
-# Attendre que le backend soit prêt
-sleep 3
-
-# Démarrer le frontend Streamlit sur le port 80 (au lieu de 8501)
-echo "🎨 Démarrage du frontend Streamlit sur le port 80..."
+# Démarrer Streamlit
 cd /app/frontend
 streamlit run app.py \
-    --server.port=80 \
-    --server.address=0.0.0.0 \
-    --server.enableCORS=false \
-    --server.enableXsrfProtection=false \
-    --server.headless=true
-
-wait $BACKEND_PID
+    --server.port=8501 \
+    --server.address=0.0.0.0
