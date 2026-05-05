@@ -95,7 +95,9 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# Configuration du backend
+
+#--------- Configuration du backend------------#
+
 # Changement automatique entre local et production
 if os.environ.get('RENDER') or os.environ.get('STREAMLIT_CLOUD'):
     BACKEND_URL = 'https://sentinelleci-backend.onrender.com'
