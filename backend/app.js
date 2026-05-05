@@ -37,6 +37,16 @@ async function enregistrerSurBlockchain(signalement) {
     }
 }
 
+// Route de santé pour Render
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        service: 'sentinelleci-backend',
+        signalements_count: signalements.length
+    });
+});
+
 // Routes
 app.get('/api/signalements', (req, res) => {
     res.json(signalements);
@@ -58,7 +68,9 @@ app.post('/api/signalements', async (req, res) => {
             created_at: new Date().toISOString()
         };
 
-        console.log(`📝 Enregistrement du signalement...`);
+        console.log(`📝 Nouveau signalement reçu:`);
+        console.log(`   Type: ${type}`);
+        console.log(`   Coordonnées: ${latitude}, ${longitude}`);
 
         const blockchainResult = await enregistrerSurBlockchain(newSignalement);
 
@@ -74,7 +86,8 @@ app.post('/api/signalements', async (req, res) => {
 
             signalements.push(newSignalement);
 
-            console.log(`✅ Signalement enregistré: ${blockchainId}`);
+            console.log(`✅ Signalement enregistré avec succès!`);
+            console.log(`   Hash: ${blockchainResult.tx_hash.substring(0, 20)}...`);
 
             res.status(201).json({
                 id: blockchainId,
@@ -85,10 +98,11 @@ app.post('/api/signalements', async (req, res) => {
                 message: `Signalement enregistré sur blockchain`
             });
         } else {
+            console.error(`❌ Échec blockchain: ${blockchainResult.error}`);
             res.status(500).json({ error: 'Échec blockchain', details: blockchainResult.error });
         }
     } catch (error) {
-        console.error('Erreur:', error);
+        console.error('❌ Erreur:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -101,4 +115,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`📡 Port: ${PORT}`);
     console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
     console.log(`✅ API prête à recevoir des requêtes`);
+    console.log(`📊 Route santé: /api/health`);
 });
