@@ -5,31 +5,23 @@ RUN apt-get update && apt-get install -y curl
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
 
-# Créer le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers du backend
+# Copier et installer les dépendances
+COPY frontend/requirements.txt /app/frontend/requirements.txt
+RUN pip install --no-cache-dir -r /app/frontend/requirements.txt
+
 COPY backend/ ./backend/
-
-# Copier les fichiers du frontend
 COPY frontend/ ./frontend/
+COPY start.sh .
 
-# Installer les dépendances Python (frontend)
-RUN pip install --no-cache-dir -r frontend/requirements.txt
-
-# Installer les dépendances Node.js (backend)
 WORKDIR /app/backend
 RUN npm install
 
-# Revenir au répertoire racine
 WORKDIR /app
-
-# Copier et configurer le script de démarrage
-COPY start.sh .
 RUN chmod +x start.sh
 
-# Exposer le port Streamlit (Render utilisera ce port)
-EXPOSE 8501
+# Exposer le port que Render utilisera (changer de 8501 à 80)
+EXPOSE 80
 
-# Démarrer les deux services
 CMD ["./start.sh"]
