@@ -13,22 +13,14 @@ BACKEND_PID=$!
 # Attendre que le backend soit prêt
 sleep 3
 
-# Vérifier que le backend répond
-if curl -s http://localhost:3001/api/health > /dev/null; then
-    echo "✅ Backend opérationnel"
-else
-    echo "⚠️  Backend non vérifié, mais on continue..."
-fi
-
-# Démarrer le frontend Streamlit
-echo "🎨 Démarrage du frontend Streamlit..."
+# Démarrer le frontend Streamlit sur le port 80 (au lieu de 8501)
+echo "🎨 Démarrage du frontend Streamlit sur le port 80..."
 cd /app/frontend
 streamlit run app.py \
-    --server.port=8501 \
+    --server.port=80 \
     --server.address=0.0.0.0 \
     --server.enableCORS=false \
     --server.enableXsrfProtection=false \
-    --server.maxUploadSize=50
+    --server.headless=true
 
-# Garder le processus en vie
 wait $BACKEND_PID
