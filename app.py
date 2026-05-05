@@ -5,13 +5,105 @@ from streamlit_folium import st_folium
 import folium
 import requests
 
-# Configuration de la page
+# ==================== CONFIGURATION DE LA PAGE ====================
 st.set_page_config(
     page_title="SentinelleCI",
     page_icon="📍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ==================== ENTÊTE COMPLÈTE SENTINELLE.CI ====================
+#configuration de la page
+# Barre supérieure avec dégradé vert
+st.markdown("""
+<div style="background: linear-gradient(135deg, #1a5e2a 0%, #2d8a3e 100%);
+            padding: 20px 30px;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="background: white; 
+                        border-radius: 50%; 
+                        width: 55px; 
+                        height: 55px; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                <span style="font-size: 32px;">📍</span>
+            </div>
+            <div>
+                <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700;">Sentinelle.CI</h1>
+                <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 12px;">↳ Signalements citoyens sur blockchain</p>
+            </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.2);
+                    padding: 8px 15px;
+                    border-radius: 20px;">
+            <span style="color: white; font-size: 12px;">✓ Blockchain active</span>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ==================== BARRE DE RECHERCHE ====================
+st.markdown("""
+<div style="margin: -10px 20px 20px 20px;">
+    <div style="background: white;
+                border-radius: 50px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                padding: 5px 5px 5px 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;">
+        <span style="font-size: 18px; color: #6c757d;">🔍</span>
+        <input type="text" 
+               id="search_input"
+               placeholder="Rechercher un quartier, une adresse ou un signalement..." 
+               style="flex: 1;
+                      border: none;
+                      padding: 12px 0;
+                      font-size: 14px;
+                      outline: none;
+                      background: transparent;">
+        <button id="search_button"
+                style="background: linear-gradient(135deg, #1a5e2a 0%, #2d8a3e 100%);
+                      border: none;
+                      color: white;
+                      padding: 10px 30px;
+                      border-radius: 50px;
+                      cursor: pointer;
+                      font-weight: 600;
+                      transition: transform 0.2s;">
+            Rechercher
+        </button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('search_button').addEventListener('click', function() {
+        var query = document.getElementById('search_input').value;
+        if (query) {
+            alert("Recherche : " + query + "\\n(Fonctionnalité à implémenter)");
+        }
+    });
+</script>
+""", unsafe_allow_html=True)
+
+
+#--------- Configuration du backend------------#
+
+# Changement automatique entre local et production
+if os.environ.get('RENDER') or os.environ.get('STREAMLIT_CLOUD'):
+    BACKEND_URL = 'http://localhost:3001'
+
+else:
+    BACKEND_URL = 'http://localhost:3001'
+
+
+st.markdown("---")
 
 # Initialisation des données de démonstration
 if 'signalements' not in st.session_state:
