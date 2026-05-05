@@ -100,7 +100,8 @@ st.markdown("""
 
 # Changement automatique entre local et production
 if os.environ.get('RENDER') or os.environ.get('STREAMLIT_CLOUD'):
-    BACKEND_URL = 'https://sentinelleci-backend.onrender.com'
+    BACKEND_URL = 'http://localhost:3001'
+
 else:
     BACKEND_URL = 'http://localhost:3001'
 
