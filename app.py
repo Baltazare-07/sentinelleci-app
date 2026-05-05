@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 import random
+import os
 from streamlit_folium import st_folium
 import folium
 import requests
