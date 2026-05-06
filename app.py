@@ -390,8 +390,8 @@ else:
         st.markdown("### 📍 GÉOLOCALISATION")
     
     # Coordonnées par défaut (Abidjan)
-    default_lat = 5.3415
-    default_lng = -4.0142
+        default_lat = 5.3415
+        default_lng = -4.0142
     
     # Initialiser les coordonnées dans session_state
     if 'selected_lat' not in st.session_state:
