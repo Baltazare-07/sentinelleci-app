@@ -313,6 +313,7 @@ elif st.session_state.page == 'nouveau_signalement':
                                 # Ajout local
                         # Définir le quartier
                     nouveau_quartier = signalement_data.get('quartier', 'Quartier non spécifié')
+                    photo_data = None  
                     st.session_state.signalements.append({
                             'id': new_id,
                             'type': st.session_state.selected_type,
@@ -324,7 +325,7 @@ elif st.session_state.page == 'nouveau_signalement':
                             'description': description,
                             'tx_hash': tx_hash,
                             'blockchain_url': blockchain_url,
-                            'has_photo': photo_data is not None
+                            'has_photo': photo_data is not None if 'photo_data' in locals() else False
                         })
     
                        # Affichage du succès avec le hash bien visible
