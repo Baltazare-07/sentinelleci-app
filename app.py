@@ -429,41 +429,41 @@ else:
             </script>
             """, unsafe_allow_html=True)
     
-    with col_loc2:
-        if st.button("🗺️ Choisir sur la carte", use_container_width=True):
-            st.session_state.show_map = True
-            st.session_state.show_manual = False
-            st.rerun()
+        with col_loc2:
+            if st.button("🗺️ Choisir sur la carte", use_container_width=True):
+                st.session_state.show_map = True
+                st.session_state.show_manual = False
+                st.rerun()
     
-    with col_loc3:
-        if st.button("✏️ Saisir manuellement", use_container_width=True):
-            st.session_state.show_manual = True
-            st.session_state.show_map = False
-            st.rerun()
+        with col_loc3:
+            if st.button("✏️ Saisir manuellement", use_container_width=True):
+                st.session_state.show_manual = True
+                st.session_state.show_map = False
+                st.rerun()
     
     # Carte interactive
-    if st.session_state.show_map:
-        st.markdown("**Cliquez sur la carte pour placer le marqueur**")
+        if st.session_state.show_map:
+            st.markdown("**Cliquez sur la carte pour placer le marqueur**")
         
-        m = folium.Map(location=[st.session_state.selected_lat, st.session_state.selected_lng], zoom_start=15)
+            m = folium.Map(location=[st.session_state.selected_lat, st.session_state.selected_lng], zoom_start=15)
         
-        folium.Marker(
-            location=[st.session_state.selected_lat, st.session_state.selected_lng],
-            popup="📍 Position du signalement",
-            draggable=True,
-            icon=folium.Icon(color='red', icon='info-sign')
-        ).add_to(m)
+            folium.Marker(
+                location=[st.session_state.selected_lat, st.session_state.selected_lng],
+                popup="📍 Position du signalement",
+                draggable=True,
+                icon=folium.Icon(color='red', icon='info-sign')
+            ).add_to(m)
         
-        from folium.plugins import LocateControl
-        LocateControl().add_to(m)
+            from folium.plugins import LocateControl
+            LocateControl().add_to(m)
         
-        map_data = st_folium(m, width=700, height=400, key="location_map")
+            map_data = st_folium(m, width=700, height=400, key="location_map")
         
-        if map_data and map_data.get('last_clicked'):
-            st.session_state.selected_lat = map_data['last_clicked']['lat']
-            st.session_state.selected_lng = map_data['last_clicked']['lng']
-            st.success(f"📍 Position mise à jour: {st.session_state.selected_lat:.4f}, {st.session_state.selected_lng:.4f}")
-            st.rerun()
+            if map_data and map_data.get('last_clicked'):
+                st.session_state.selected_lat = map_data['last_clicked']['lat']
+                st.session_state.selected_lng = map_data['last_clicked']['lng']
+                st.success(f"📍 Position mise à jour: {st.session_state.selected_lat:.4f}, {st.session_state.selected_lng:.4f}")
+                st.rerun()
     
     # Saisie manuelle
     if st.session_state.show_manual:
