@@ -99,7 +99,6 @@ st.markdown("""
 # Changement automatique entre local et production
 if os.environ.get('RENDER') or os.environ.get('STREAMLIT_CLOUD'):
     BACKEND_URL = 'https://backend-37po.onrender.com'
-
 else:
     BACKEND_URL = 'https://backend-37po.onrender.com'
 
@@ -261,155 +260,56 @@ if st.session_state.page == 'accueil':
         st.session_state.page = 'nouveau_signalement'
         st.rerun()
 
-# PAGE MES SIGNALEMENTS
-    elif st.session_state.page == 'mes_signalements':
-         st.markdown("## 📋 Mes signalements")
+# PAGE NOUVEAU SIGNALEMENT
+elif st.session_state.page == 'nouveau_signalement':
+    st.markdown("## Nouveau signalement")
     
-    mes_signalements = st.session_state.signalements[-10:]
-    if not mes_signalements:
-        st.info("📭 Vous n'avez pas encore de signalements")
-    else:
-        for s in reversed(mes_signalements):
-            with st.container():
-                # Statut avec couleur
-                if s.get('statut') == 'resolu':
-                    status_emoji = "🟢"
-                    status_text = "Résolu"
-                elif s.get('statut') == 'en_cours':
-                    status_emoji = "🟠"
-                    status_text = "En cours"
-                else:
-                    status_emoji = "🔴"
-                    status_text = "En attente"
-                
-                # ✅ Gestion sécurisée de l'ID
-                signal_id = s.get('id')
-                if signal_id is None:
-                    signal_id = "ID_temp"
-                else:
-                    signal_id = str(signal_id)
-                
-                # Tronquer l'ID si nécessaire
-                short_id = signal_id[:24] + '...' if len(signal_id) > 24 else signal_id
-                
-                # Gestion sécurisée de la date
-                if isinstance(s.get('date'), datetime.datetime):
-                    date_str = s['date'].strftime('%d/%m/%Y')
-                else:
-                    date_str = str(s.get('date', 'Date inconnue'))[:10]
-                
-                st.markdown(f"""
-                **{s.get('type', 'Type inconnu')}** - `{short_id}`  
-                📍 {s.get('quartier', 'Quartier inconnu')} - {date_str}  
-                {status_emoji} {status_text}
-                """)
-                
-                # Ajouter le lien Etherscan si disponible
-                tx_hash = s.get('tx_hash')
-                if tx_hash and str(tx_hash).startswith('0x'):
-                    etherscan_url = f"https://sepolia.etherscan.io/tx/{tx_hash}"
-                    # Afficher aussi le hash raccourci
-                    short_hash = str(tx_hash)[:20] + '...' if len(str(tx_hash)) > 20 else str(tx_hash)
-                    st.markdown(f"🔗 Hash: `{short_hash}`")
-                    st.markdown(f"[🔍 Vérifier sur Etherscan]({etherscan_url})")
-                
-                st.divider()
-    
-                if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
-                   st.session_state.page = 'nouveau_signalement'
-                   st.rerun()
-                else:
-                    st.error(f"❌ Erreur: {response.status_code}")
-
-# PAGE MES SIGNALEMENTS
-elif st.session_state.page == 'mes_signalements':
-    st.markdown("## 📋 Mes signalements")
-    
-    mes_signalements = st.session_state.signalements[-10:]
-    if not mes_signalements:
-        st.info("📭 Vous n'avez pas encore de signalements")
-    else:
-        for s in reversed(mes_signalements):
-            with st.container():
-                # Statut avec couleur
-                if s['statut'] == 'resolu':
-                    status_emoji = "🟢"
-                    status_text = "Résolu"
-                elif s['statut'] == 'en_cours':
-                    status_emoji = "🟠"
-                    status_text = "En cours"
-                else:
-                    status_emoji = "🔴"
-                    status_text = "En attente"
-                
-                # Afficher les informations
-                short_id = s['id'][:24] + '...' if len(s['id']) > 24 else s['id']
-                date_str = s['date'].strftime('%d/%m/%Y') if isinstance(s['date'], datetime.datetime) else s['date'][:10]
-                
-                st.markdown(f"""
-                **{s['type']}** - `{short_id}`  
-                📍 {s['quartier']} - {date_str}  
-                {status_emoji} {status_text}
-                """)
-                
-                # Ajouter le lien Etherscan si disponible
-                if s.get('tx_hash') and s['tx_hash'].startswith('0x'):
-                    etherscan_url = f"https://sepolia.etherscan.io/tx/{s['tx_hash']}"
-                    st.markdown(f"🔗 [🔍 **Vérifier sur Etherscan**]({etherscan_url})")
-                
-                st.divider()
-    
-    if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
-        st.session_state.page = 'nouveau_signalement'
-        st.rerun()
- 
-#PAGE NOUVEAU SIGNALEMENT
-if st.button("← Retour"):
+    if st.button("← Retour"):
         st.session_state.page = 'accueil'
         st.rerun()
     
-        st.markdown("---")
+    st.markdown("---")
     
     # ========== SECTION TYPE DE PROBLÈME ==========
-        st.markdown("### 🔄 TYPE DE PROBLÈME")
-        type_probleme = st.selectbox(
-            "Choisissez le type de problème",
-            ["Route", "Eau", "École", "Éclairage"],
-            index=None,
-            placeholder="Sélectionnez..."
-        )
-if type_probleme:
+    st.markdown("### 🔄 TYPE DE PROBLÈME")
+    type_probleme = st.selectbox(
+        "Choisissez le type de problème",
+        ["Route", "Eau", "École", "Éclairage"],
+        index=None,
+        placeholder="Sélectionnez..."
+    )
+    if type_probleme:
         st.session_state.selected_type = type_probleme
         st.success(f"✅ Type sélectionné: {type_probleme}")
-else:
+    else:
         st.info("👆 Veuillez sélectionner un type de problème")
     
-        st.markdown("---")
+    st.markdown("---")
     
     # ========== SECTION GÉOLOCALISATION ==========
-        st.markdown("### 📍 GÉOLOCALISATION")
+    st.markdown("### 📍 GÉOLOCALISATION")
     
     # Coordonnées par défaut (Abidjan)
-        default_lat = 5.3415
-        default_lng = -4.0142
+    default_lat = 5.3415
+    default_lng = -4.0142
     
     # Initialiser les coordonnées dans session_state
-        if 'selected_lat' not in st.session_state:
-            st.session_state.selected_lat = default_lat
-        if 'selected_lng' not in st.session_state:
-            st.session_state.selected_lng = default_lng
-        if 'show_map' not in st.session_state:
-            st.session_state.show_map = True
-        if 'show_manual' not in st.session_state:
-            st.session_state.show_manual = False
+    if 'selected_lat' not in st.session_state:
+        st.session_state.selected_lat = default_lat
+    if 'selected_lng' not in st.session_state:
+        st.session_state.selected_lng = default_lng
+    if 'show_map' not in st.session_state:
+        st.session_state.show_map = True
+    if 'show_manual' not in st.session_state:
+        st.session_state.show_manual = False
     
     # Trois colonnes pour les options de localisation
-        col_loc1, col_loc2, col_loc3 = st.columns(3)
+    col_loc1, col_loc2, col_loc3 = st.columns(3)
     
-        with col_loc1:
-            if st.button("📍 Ma position actuelle", use_container_width=True):
-                st.info("🔍 Cliquez sur 'Autoriser' dans la fenêtre du navigateur")
-                st.markdown("""
+    with col_loc1:
+        if st.button("📍 Ma position actuelle", use_container_width=True):
+            st.info("🔍 Cliquez sur 'Autoriser' dans la fenêtre du navigateur")
+            st.markdown("""
             <script>
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -429,41 +329,41 @@ else:
             </script>
             """, unsafe_allow_html=True)
     
-        with col_loc2:
-            if st.button("🗺️ Choisir sur la carte", use_container_width=True):
-                st.session_state.show_map = True
-                st.session_state.show_manual = False
-                st.rerun()
+    with col_loc2:
+        if st.button("🗺️ Choisir sur la carte", use_container_width=True):
+            st.session_state.show_map = True
+            st.session_state.show_manual = False
+            st.rerun()
     
-        with col_loc3:
-            if st.button("✏️ Saisir manuellement", use_container_width=True):
-                st.session_state.show_manual = True
-                st.session_state.show_map = False
-                st.rerun()
+    with col_loc3:
+        if st.button("✏️ Saisir manuellement", use_container_width=True):
+            st.session_state.show_manual = True
+            st.session_state.show_map = False
+            st.rerun()
     
     # Carte interactive
-        if st.session_state.show_map:
-            st.markdown("**Cliquez sur la carte pour placer le marqueur**")
+    if st.session_state.show_map:
+        st.markdown("**Cliquez sur la carte pour placer le marqueur**")
         
-            m = folium.Map(location=[st.session_state.selected_lat, st.session_state.selected_lng], zoom_start=15)
+        m = folium.Map(location=[st.session_state.selected_lat, st.session_state.selected_lng], zoom_start=15)
         
-            folium.Marker(
-                location=[st.session_state.selected_lat, st.session_state.selected_lng],
-                popup="📍 Position du signalement",
-                draggable=True,
-                icon=folium.Icon(color='red', icon='info-sign')
-            ).add_to(m)
+        folium.Marker(
+            location=[st.session_state.selected_lat, st.session_state.selected_lng],
+            popup="📍 Position du signalement",
+            draggable=True,
+            icon=folium.Icon(color='red', icon='info-sign')
+        ).add_to(m)
         
-            from folium.plugins import LocateControl
-            LocateControl().add_to(m)
+        from folium.plugins import LocateControl
+        LocateControl().add_to(m)
         
-            map_data = st_folium(m, width=700, height=400, key="location_map")
+        map_data = st_folium(m, width=700, height=400, key="location_map")
         
-            if map_data and map_data.get('last_clicked'):
-                st.session_state.selected_lat = map_data['last_clicked']['lat']
-                st.session_state.selected_lng = map_data['last_clicked']['lng']
-                st.success(f"📍 Position mise à jour: {st.session_state.selected_lat:.4f}, {st.session_state.selected_lng:.4f}")
-                st.rerun()
+        if map_data and map_data.get('last_clicked'):
+            st.session_state.selected_lat = map_data['last_clicked']['lat']
+            st.session_state.selected_lng = map_data['last_clicked']['lng']
+            st.success(f"📍 Position mise à jour: {st.session_state.selected_lat:.4f}, {st.session_state.selected_lng:.4f}")
+            st.rerun()
     
     # Saisie manuelle
     if st.session_state.show_manual:
@@ -522,6 +422,8 @@ else:
     # Initialiser l'état de la caméra
     if 'camera_enabled' not in st.session_state:
         st.session_state.camera_enabled = False
+    if 'photo_data' not in st.session_state:
+        st.session_state.photo_data = None
     
     # Bouton pour activer la caméra
     col_btn_cam, col_btn_up = st.columns(2)
@@ -535,13 +437,11 @@ else:
         st.markdown("**Ou**")
     
     # Caméra (affichée seulement si activée)
-    photo_data = None
-    
     if st.session_state.camera_enabled:
         st.markdown("**📷 Prendre une photo**")
         camera_photo = st.camera_input("Prenez une photo", label_visibility="collapsed", key="camera_photo")
         if camera_photo:
-            photo_data = camera_photo
+            st.session_state.photo_data = camera_photo
             st.success("✅ Photo prise avec succès !")
             
             # Option pour désactiver la caméra après la photo
@@ -558,13 +458,18 @@ else:
         key="upload_photo"
     )
     if uploaded_file:
-        photo_data = uploaded_file
+        st.session_state.photo_data = uploaded_file
         st.success("✅ Photo uploadée avec succès !")
     
     # Aperçu de la photo
-    if photo_data:
+    if st.session_state.photo_data:
         st.markdown("**📸 Aperçu :**")
-        st.image(photo_data, width=300)
+        st.image(st.session_state.photo_data, width=300)
+        
+        # Bouton pour supprimer
+        if st.button("🗑️ Supprimer la photo"):
+            st.session_state.photo_data = None
+            st.rerun()
     else:
         st.info("💡 Vous pouvez ajouter une photo (optionnel)")
     
@@ -579,7 +484,6 @@ else:
     )
     
     st.markdown("---")
-
   
     # ========== ACCEPTATION BLOCKCHAIN ==========
     st.markdown("### 🔗 BLOCKCHAIN")
@@ -610,7 +514,7 @@ else:
             try:
                 with st.spinner("⏳ Enregistrement sur la blockchain en cours..."):
                     response = requests.post(
-                        'https://backend-37po.onrender.com',
+                        f'{BACKEND_URL}/api/signalements',
                         json=signalement_data,
                         timeout=30
                     )
@@ -633,19 +537,24 @@ else:
                             'description': description,
                             'tx_hash': tx_hash,
                             'blockchain_url': blockchain_url,
-                            'has_photo': photo_data is not None
+                            'has_photo': st.session_state.photo_data is not None
                         })
                         
-                        st.success(f"✅ Signalement enregistré avec succès !")
-                        short_hash = tx_hash[:20] + '...' if len(tx_hash) > 20 else tx_hash
-                        st.markdown(f"🔗 **Hash transaction:** `{short_hash}`")
+                        st.success("✅ Signalement enregistré avec succès !")
+                        
+                        # Afficher le hash
+                        st.markdown("---")
+                        st.markdown("### 🔗 TRANSACTION BLOCKCHAIN")
+                        st.markdown(f"**Hash de la transaction :**")
+                        st.code(f"{tx_hash}", language="text")
                         
                         if blockchain_url:
-                            st.markdown(f"[🔍 **Vérifier sur Etherscan**]({blockchain_url})")
+                            st.markdown(f"**🔍 Vérifier sur Etherscan :**")
+                            st.markdown(f"[{blockchain_url}]({blockchain_url})")
                         
-                        if photo_data:
+                        if st.session_state.photo_data:
                             st.markdown("### 📸 Photo du signalement")
-                            st.image(photo_data, width=300)
+                            st.image(st.session_state.photo_data, width=300)
                         
                         st.balloons()
                         
@@ -653,6 +562,7 @@ else:
                         st.session_state.show_map = True
                         st.session_state.show_manual = False
                         st.session_state.camera_enabled = False
+                        st.session_state.photo_data = None
                         st.session_state.page = 'accueil'
                         st.session_state.selected_type = None
                         st.rerun()
@@ -660,11 +570,65 @@ else:
                         st.error(f"❌ Erreur: {response.status_code}")
                         
             except requests.exceptions.ConnectionError:
-                st.error("❌ Impossible de se connecter au backend. Vérifiez que le serveur tourne sur le port 3001")
+                st.error("❌ Impossible de se connecter au backend.")
             except Exception as e:
                 st.error(f"❌ Erreur: {str(e)}")
 
-
+# PAGE MES SIGNALEMENTS
+elif st.session_state.page == 'mes_signalements':
+    st.markdown("## 📋 Mes signalements")
+    
+    mes_signalements = st.session_state.signalements[-10:]
+    if not mes_signalements:
+        st.info("📭 Vous n'avez pas encore de signalements")
+    else:
+        for s in reversed(mes_signalements):
+            with st.container():
+                # Statut avec couleur
+                if s.get('statut') == 'resolu':
+                    status_emoji = "🟢"
+                    status_text = "Résolu"
+                elif s.get('statut') == 'en_cours':
+                    status_emoji = "🟠"
+                    status_text = "En cours"
+                else:
+                    status_emoji = "🔴"
+                    status_text = "En attente"
+                
+                # Gestion sécurisée de l'ID
+                signal_id = s.get('id')
+                if signal_id is None:
+                    signal_id = "ID_temp"
+                else:
+                    signal_id = str(signal_id)
+                
+                short_id = signal_id[:24] + '...' if len(signal_id) > 24 else signal_id
+                
+                # Gestion sécurisée de la date
+                if isinstance(s.get('date'), datetime.datetime):
+                    date_str = s['date'].strftime('%d/%m/%Y')
+                else:
+                    date_str = str(s.get('date', 'Date inconnue'))[:10]
+                
+                st.markdown(f"""
+                **{s.get('type', 'Type inconnu')}** - `{short_id}`  
+                📍 {s.get('quartier', 'Quartier inconnu')} - {date_str}  
+                {status_emoji} {status_text}
+                """)
+                
+                # Ajouter le lien Etherscan si disponible
+                tx_hash = s.get('tx_hash')
+                if tx_hash and str(tx_hash).startswith('0x'):
+                    etherscan_url = f"https://sepolia.etherscan.io/tx/{tx_hash}"
+                    short_hash = str(tx_hash)[:20] + '...' if len(str(tx_hash)) > 20 else str(tx_hash)
+                    st.markdown(f"🔗 Hash: `{short_hash}`")
+                    st.markdown(f"[🔍 Vérifier sur Etherscan]({etherscan_url})")
+                
+                st.divider()
+    
+    if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
+        st.session_state.page = 'nouveau_signalement'
+        st.rerun()
 
 # PAGE PROFIL
 elif st.session_state.page == 'profil':
