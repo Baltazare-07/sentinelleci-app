@@ -679,31 +679,40 @@ elif st.session_state.page == 'mairie':
     col_left, col_right = st.columns([2, 1])
     
     with col_left:
-        st.markdown("### 🚨 SIGNALEMENTS NON PRIS EN CHARGE")
-        non_pris = [s for s in st.session_state.signalements if s['statut'] == 'en_attente']
-        
-        if non_pris:
-            for i, s in enumerate(non_pris):
-                date_str = s['date'].strftime('%d/%m/%Y') if isinstance(s['date'], datetime.datetime) else s['date'][:10]
-                signalement_id = f"SIG-ABJ-2026-{str(i+1).zfill(3)}"
-                
-                col_id, col_type, col_quartier, col_date, col_action = st.columns([1.5, 1, 1, 1, 1])
-                with col_id:
-                    st.write(f"**{signalement_id}**")
-                with col_type:
-                    st.write(s['type'])
-                with col_quartier:
-                    st.write(s['quartier'])
-                with col_date:
-                    st.write(date_str)
-                with col_action:
-                    if st.button("📋 PRENDRE", key=f"prendre_mairie_{i}"):
-                        st.session_state.selected_signalement = s
-                        st.session_state.show_prise_en_charge = True
-                        st.rerun()
-                st.divider()
-        else:
-            st.info("✅ Aucun signalement en attente")
+    st.markdown("### 🚨 SIGNALEMENTS NON PRIS EN CHARGE")
+    non_pris = [s for s in st.session_state.signalements if s.get('statut') == 'en_attente']
+    
+    if non_pris:
+        for i, s in enumerate(non_pris):
+            # Gestion sécurisée de la date
+            if isinstance(s.get('date'), datetime.datetime):
+                date_str = s['date'].strftime('%d/%m/%Y')
+            else:
+                date_str = str(s.get('date', 'Date inconnue'))[:10]
+            
+            # Gestion sécurisée du type et quartier
+            signalement_type = s.get('type', 'Type inconnu')
+            signalement_quartier = s.get('quartier', 'Quartier inconnu')
+            
+            signalement_id = f"SIG-ABJ-2026-{str(i+1).zfill(3)}"
+            
+            col_id, col_type, col_quartier, col_date, col_action = st.columns([1.5, 1, 1, 1, 1])
+            with col_id:
+                st.write(f"**{signalement_id}**")
+            with col_type:
+                st.write(signalement_type)
+            with col_quartier:
+                st.write(signalement_quartier)
+            with col_date:
+                st.write(date_str)
+            with col_action:
+                if st.button("📋 PRENDRE", key=f"prendre_mairie_{i}"):
+                    st.session_state.selected_signalement = s
+                    st.session_state.show_prise_en_charge = True
+                    st.rerun()
+            st.divider()
+    else:
+        st.info("✅ Aucun signalement en attente")
     
     with col_right:
         st.markdown("### 📊 RÉPARTITION")
@@ -732,14 +741,36 @@ elif st.session_state.page == 'mairie':
         st.markdown("---")
         st.markdown("## 📋 PRISE EN CHARGE D'UN SIGNALEMENT")
         
+            # Section Prise en charge
+    if st.session_state.show_prise_en_charge and st.session_state.get('selected_signalement'):
+        st.markdown("---")
+        st.markdown("## 📋 PRISE EN CHARGE D'UN SIGNALEMENT")
+        
         s = st.session_state.selected_signalement
-        date_str = s['date'].strftime('%d/%m/%Y à %H:%M') if isinstance(s['date'], datetime.datetime) else s['date'][:10]
+        
+        # Gestion sécurisée de la date
+        if isinstance(s.get('date'), datetime.datetime):
+            date_str = s['date'].strftime('%d/%m/%Y à %H:%M')
+        else:
+            date_str = str(s.get('date', 'Date inconnue'))[:10]
+        
+        # Gestion sécurisée de l'ID
+        signalement_id = s.get('id')
+        if signalement_id is None:
+            signalement_id = "ID_inconnu"
+        else:
+            signalement_id = str(signalement_id)
+        short_id = signalement_id[:16] + '...' if len(signalement_id) > 16 else signalement_id
+        
+        # Gestion sécurisée du type et quartier
+        signalement_type = s.get('type', 'Type inconnu')
+        signalement_quartier = s.get('quartier', 'Quartier inconnu')
         
         col_left2, col_right2 = st.columns(2)
         with col_left2:
             st.info(f"""
-            **Signalement #{s['id'][:16]}...**  
-            📍 {s['type']} - {s['quartier']}  
+            **Signalement #{short_id}**  
+            📍 {signalement_type} - {signalement_quartier}  
             📅 Signalé le {date_str}
             """)
         
@@ -752,18 +783,19 @@ elif st.session_state.page == 'mairie':
             with col_btn1:
                 if st.button("✅ VALIDER", use_container_width=True):
                     for signalement in st.session_state.signalements:
-                        if signalement['id'] == s['id']:
+                        if signalement.get('id') == s.get('id'):
                             signalement['statut'] = 'en_cours'
                             signalement['agent'] = agent
+                            signalement['commentaire'] = commentaire
+                            signalement['date_intervention'] = date_intervention.strftime('%Y-%m-%d')
                             break
                     st.session_state.show_prise_en_charge = False
+                    st.session_state.selected_signalement = None
                     st.success(f"✅ Signalement assigné à {agent}")
                     st.rerun()
             with col_btn2:
                 if st.button("❌ ANNULER", use_container_width=True):
                     st.session_state.show_prise_en_charge = False
+                    st.session_state.selected_signalement = None
                     st.rerun()
-
-# Navigation dans le contenu principal (optionnel)
-st.markdown("---")
 st.caption(f"© 2026 Sentinelle.CI - Plateforme citoyenne | Connected to Blockchain")
