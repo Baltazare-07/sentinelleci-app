@@ -363,8 +363,8 @@ elif st.session_state.page == 'mes_signalements':
         st.session_state.page = 'nouveau_signalement'
         st.rerun()
  
-s#PAGE NOUVEAU SIGNALEMENT
-    if st.button("← Retour"):
+#PAGE NOUVEAU SIGNALEMENT
+if st.button("← Retour"):
         st.session_state.page = 'accueil'
         st.rerun()
     
