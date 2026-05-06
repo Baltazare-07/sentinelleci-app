@@ -315,10 +315,10 @@ elif st.session_state.page == 'mes_signalements':
                 
                 st.divider()
     
-    if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
-        st.session_state.page = 'nouveau_signalement'
-        st.rerun()
-                    else:
+                if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
+                   st.session_state.page = 'nouveau_signalement'
+                   st.rerun()
+                else:
                         st.error(f"❌ Erreur: {response.status_code}")
                         
             except requests.exceptions.ConnectionError:
