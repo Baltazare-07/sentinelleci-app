@@ -368,16 +368,16 @@ if st.button("← Retour"):
         st.session_state.page = 'accueil'
         st.rerun()
     
-    st.markdown("---")
+        st.markdown("---")
     
     # ========== SECTION TYPE DE PROBLÈME ==========
-    st.markdown("### 🔄 TYPE DE PROBLÈME")
-    type_probleme = st.selectbox(
-        "Choisissez le type de problème",
-        ["Route", "Eau", "École", "Éclairage"],
-        index=None,
-        placeholder="Sélectionnez..."
-    )
+        st.markdown("### 🔄 TYPE DE PROBLÈME")
+        type_probleme = st.selectbox(
+            "Choisissez le type de problème",
+            ["Route", "Eau", "École", "Éclairage"],
+            index=None,
+            placeholder="Sélectionnez..."
+        )
     if type_probleme:
         st.session_state.selected_type = type_probleme
         st.success(f"✅ Type sélectionné: {type_probleme}")
