@@ -378,13 +378,13 @@ if st.button("← Retour"):
             index=None,
             placeholder="Sélectionnez..."
         )
-    if type_probleme:
+if type_probleme:
         st.session_state.selected_type = type_probleme
         st.success(f"✅ Type sélectionné: {type_probleme}")
-    else:
+else:
         st.info("👆 Veuillez sélectionner un type de problème")
     
-    st.markdown("---")
+         st.markdown("---")
     
     # ========== SECTION GÉOLOCALISATION ==========
     st.markdown("### 📍 GÉOLOCALISATION")
