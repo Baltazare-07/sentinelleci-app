@@ -288,7 +288,7 @@ elif st.session_state.page == 'nouveau_signalement':
             try:
                 with st.spinner("⏳ Enregistrement sur la blockchain en cours..."):
                     response = requests.post(
-                        'http://localhost:3001/api/signalements',
+                        'http://localhost:10000/api/signalements',
                         json=signalement_data,
                         timeout=10
                     )
