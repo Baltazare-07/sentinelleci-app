@@ -262,8 +262,8 @@ if st.session_state.page == 'accueil':
         st.rerun()
 
 # PAGE MES SIGNALEMENTS
-elif st.session_state.page == 'mes_signalements':
-    st.markdown("## 📋 Mes signalements")
+    elif st.session_state.page == 'mes_signalements':
+         st.markdown("## 📋 Mes signalements")
     
     mes_signalements = st.session_state.signalements[-10:]
     if not mes_signalements:
