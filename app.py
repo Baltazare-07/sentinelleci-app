@@ -309,26 +309,44 @@ elif st.session_state.page == 'nouveau_signalement':
                         new_id = result.get('id')
                         tx_hash = result.get('tx_hash')
                         blockchain_url = result.get('blockchain_url')
-                        
-                        # Ajout local avec le hash blockchain
+    
+                                # Ajout local
                         st.session_state.signalements.append({
                             'id': new_id,
                             'type': st.session_state.selected_type,
-                            'quartier': "Nouveau quartier",
+                            'quartier': nouveau_quartier,
                             'date': datetime.datetime.now(),
                             'statut': 'en_attente',
                             'lat': signalement_data['latitude'],
                             'lng': signalement_data['longitude'],
                             'description': description,
                             'tx_hash': tx_hash,
-                            'blockchain_url': blockchain_url
+                            'blockchain_url': blockchain_url,
+                            'has_photo': photo_data is not None
                         })
-                        
-                        st.success(f"✅ Signalement enregistré avec succès sur la blockchain !")
-                        short_hash = tx_hash[:20] + '...' if len(tx_hash) > 20 else tx_hash
-                        st.markdown(f"🔗 **Hash transaction:** `{short_hash}`")
-                        if blockchain_url:
-                            st.markdown(f"[🔍 **Vérifier sur Etherscan**]({blockchain_url})")
+    
+                       # Affichage du succès avec le hash bien visible
+                        st.success(f"✅ Signalement enregistré avec succès !")
+    
+                       # AFFICHAGE CLAIR DU HASH DE TRANSACTION
+                        st.markdown("---")
+                        st.markdown("### 🔗 TRANSACTION BLOCKCHAIN")
+    
+                      # Afficher le hash complet
+                        st.markdown(f"**Hash de la transaction :**")
+                        st.code(f"{tx_hash}", language="text")
+    
+                       # Bouton pour copier le hash
+                        st.button(f"📋 Copier le hash", key="copy_hash")
+    
+                     # Lien Etherscan bien visible
+                    if blockchain_url:
+                        st.markdown(f"**🔍 Vérifier sur Etherscan :**")
+                        st.markdown(f"[{blockchain_url}]({blockchain_url})")
+    
+                        st.markdown("---")
+                        st.info("ℹ️ Ce hash est la preuve irréfutable de votre signalement sur la blockchain")
+    
                         st.balloons()
                         
                         # Retour à l'accueil
