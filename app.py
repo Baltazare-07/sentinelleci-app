@@ -331,15 +331,15 @@ elif st.session_state.page == 'nouveau_signalement':
                     st.success(f"✅ Signalement enregistré avec succès !")
     
                        # AFFICHAGE CLAIR DU HASH DE TRANSACTION
-                        st.markdown("---")
-                        st.markdown("### 🔗 TRANSACTION BLOCKCHAIN")
+                    st.markdown("---")
+                    st.markdown("### 🔗 TRANSACTION BLOCKCHAIN")
     
                       # Afficher le hash complet
-                        st.markdown(f"**Hash de la transaction :**")
-                        st.code(f"{tx_hash}", language="text")
+                    st.markdown(f"**Hash de la transaction :**")
+                    st.code(f"{tx_hash}", language="text")
     
                        # Bouton pour copier le hash
-                        st.button(f"📋 Copier le hash", key="copy_hash")
+                    st.button(f"📋 Copier le hash", key="copy_hash")
     
                      # Lien Etherscan bien visible
                     if blockchain_url:
