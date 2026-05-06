@@ -287,11 +287,11 @@ elif st.session_state.page == 'nouveau_signalement':
             
             try:
                 with st.spinner("⏳ Enregistrement sur la blockchain en cours..."):
-                     response = requests.post(
-                     f'{BACKEND_URL}/api/signalements',  # ← UTILISER BACKEND_URL
-                     json=signalement_data,
-                     timeout=30  # Augmenter le timeout
-                     )
+                    response = requests.post(
+                        f'{BACKEND_URL}/api/signalements',  # ← UTILISER BACKEND_URL
+                        json=signalement_data,
+                        timeout=30  # Augmenter le timeout
+                    )
                     
                     if response.status_code in [200, 201]:
                         result = response.json()
