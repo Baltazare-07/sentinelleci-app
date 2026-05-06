@@ -101,7 +101,7 @@ if os.environ.get('RENDER') or os.environ.get('STREAMLIT_CLOUD'):
     BACKEND_URL = 'https://backend-37po.onrender.com'
 
 else:
-    BACKEND_URL = 'http://localhost:3001'
+    BACKEND_URL = 'https://backend-37po.onrender.com'
 
 
 st.markdown("---")
