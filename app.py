@@ -180,36 +180,44 @@ def create_map():
     colors = {'en_attente': 'red', 'en_cours': 'orange', 'resolu': 'green'}
     
     for s in st.session_state.signalements:
-        # Gestion sécurisée de l'ID
-        signal_id = s.get('id')
-        
-        # Si l'ID n'existe pas ou n'est pas une chaîne, créer un ID temporaire
-        if signal_id is None:
-            signal_id = f"signal_{id(s)}"  # ID basé sur l'adresse mémoire
-        elif not isinstance(signal_id, str):
-            signal_id = str(signal_id)  # Convertir en chaîne
-        
-        # Gestion sécurisée du hash de transaction
-        if s.get('tx_hash') and isinstance(s.get('tx_hash'), str) and s['tx_hash'].startswith('0x'):
-            etherscan_url = f"https://sepolia.etherscan.io/tx/{s['tx_hash']}"
-            short_id = signal_id[:20] + '...' if len(signal_id) > 20 else signal_id
-            popup_html = f"""
-            <div style="font-family: sans-serif; min-width: 200px;">
-                <b>{s.get('type', 'Inconnu')}</b><br>
-                📍 {s.get('quartier', 'Inconnu')}<br>
-                🆔 {short_id}<br>
-                🔗 <a href='{etherscan_url}' target='_blank'>Voir sur Etherscan</a>
-            </div>
-            """
-        else:
-            short_id = signal_id[:20] + '...' if len(signal_id) > 20 else signal_id
-            popup_html = f"{s.get('type', 'Inconnu')} - {s.get('quartier', 'Inconnu')}"
-        
-        folium.Marker(
-            location=[s['lat'], s['lng']],
-            popup=folium.Popup(popup_html, max_width=300),
-            icon=folium.Icon(color=colors.get(s.get('statut', 'en_attente'), 'gray'))
-        ).add_to(m)
+        try:
+            # Vérifier les coordonnées
+            if not s.get('lat') or not s.get('lng'):
+                continue
+            
+            # ✅ Gestion sécurisée de l'ID
+            signal_id = s.get('id')
+            if signal_id is None:
+                signal_id = "ID_inconnu"
+            else:
+                signal_id = str(signal_id)
+            
+            # Gestion du hash
+            tx_hash = s.get('tx_hash')
+            if tx_hash and str(tx_hash).startswith('0x'):
+                etherscan_url = f"https://sepolia.etherscan.io/tx/{tx_hash}"
+                short_id = signal_id[:20] + '...' if len(signal_id) > 20 else signal_id
+                popup_html = f"""
+                <div style="font-family: sans-serif; min-width: 200px;">
+                    <b>{s.get('type', 'Inconnu')}</b><br>
+                    📍 {s.get('quartier', 'Inconnu')}<br>
+                    🆔 {short_id}<br>
+                    🔗 <a href='{etherscan_url}' target='_blank'>Voir sur Etherscan</a>
+                </div>
+                """
+            else:
+                popup_html = f"{s.get('type', 'Inconnu')} - {s.get('quartier', 'Inconnu')}"
+            
+            folium.Marker(
+                location=[s['lat'], s['lng']],
+                popup=folium.Popup(popup_html, max_width=300),
+                icon=folium.Icon(color=colors.get(s.get('statut', 'en_attente'), 'gray'))
+            ).add_to(m)
+            
+        except Exception as e:
+            # Ignorer les signalements problématiques
+            continue
+            
     return m
 
 # ==================== PAGES ====================
@@ -253,109 +261,63 @@ if st.session_state.page == 'accueil':
         st.session_state.page = 'nouveau_signalement'
         st.rerun()
 
-# PAGE NOUVEAU SIGNALEMENT
-elif st.session_state.page == 'nouveau_signalement':
-    st.markdown("## Nouveau signalement")
+# PAGE MES SIGNALEMENTS
+elif st.session_state.page == 'mes_signalements':
+    st.markdown("## 📋 Mes signalements")
     
-    if st.button("← Retour"):
-        st.session_state.page = 'accueil'
+    mes_signalements = st.session_state.signalements[-10:]
+    if not mes_signalements:
+        st.info("📭 Vous n'avez pas encore de signalements")
+    else:
+        for s in reversed(mes_signalements):
+            with st.container():
+                # Statut avec couleur
+                if s.get('statut') == 'resolu':
+                    status_emoji = "🟢"
+                    status_text = "Résolu"
+                elif s.get('statut') == 'en_cours':
+                    status_emoji = "🟠"
+                    status_text = "En cours"
+                else:
+                    status_emoji = "🔴"
+                    status_text = "En attente"
+                
+                # ✅ Gestion sécurisée de l'ID
+                signal_id = s.get('id')
+                if signal_id is None:
+                    signal_id = "ID_temp"
+                else:
+                    signal_id = str(signal_id)
+                
+                # Tronquer l'ID si nécessaire
+                short_id = signal_id[:24] + '...' if len(signal_id) > 24 else signal_id
+                
+                # Gestion sécurisée de la date
+                if isinstance(s.get('date'), datetime.datetime):
+                    date_str = s['date'].strftime('%d/%m/%Y')
+                else:
+                    date_str = str(s.get('date', 'Date inconnue'))[:10]
+                
+                st.markdown(f"""
+                **{s.get('type', 'Type inconnu')}** - `{short_id}`  
+                📍 {s.get('quartier', 'Quartier inconnu')} - {date_str}  
+                {status_emoji} {status_text}
+                """)
+                
+                # Ajouter le lien Etherscan si disponible
+                tx_hash = s.get('tx_hash')
+                if tx_hash and str(tx_hash).startswith('0x'):
+                    etherscan_url = f"https://sepolia.etherscan.io/tx/{tx_hash}"
+                    # Afficher aussi le hash raccourci
+                    short_hash = str(tx_hash)[:20] + '...' if len(str(tx_hash)) > 20 else str(tx_hash)
+                    st.markdown(f"🔗 Hash: `{short_hash}`")
+                    st.markdown(f"[🔍 Vérifier sur Etherscan]({etherscan_url})")
+                
+                st.divider()
+    
+    if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
+        st.session_state.page = 'nouveau_signalement'
         st.rerun()
-    
-    st.markdown("---")
-    
-    # Type de problème
-    type_probleme = st.selectbox(
-        "Type de problème",
-        ["Route", "Eau", "École", "Éclairage"],
-        index=None,
-        placeholder="Choisissez..."
-    )
-    if type_probleme:
-        st.session_state.selected_type = type_probleme
-        st.info(f"Sélectionné: {type_probleme}")
-    
-    # Description
-    description = st.text_area("Description (optionnelle)", placeholder="Décrivez le problème...")
-    
-    # Acceptation
-    accept = st.checkbox("✅ J'accepte la publication sur blockchain (immuable)")
-    
-    # Bouton de soumission
-    if st.button("SIGNALER SUR BLOCKCHAIN", use_container_width=True):
-        if not accept:
-            st.error("Veuillez accepter la publication sur blockchain")
-        elif not st.session_state.selected_type:
-            st.error("Veuillez sélectionner un type de problème")
-        else:
-            # Préparation des données
-            signalement_data = {
-                'type': st.session_state.selected_type,
-                'description': description,
-                'quartier': "Nouveau quartier",
-                'latitude': 5.3415 + random.uniform(-0.05, 0.05),
-                'longitude': -4.0142 + random.uniform(-0.05, 0.05)
-            }
-            
-            try:
-                with st.spinner("⏳ Enregistrement sur la blockchain en cours..."):
-                    response = requests.post(
-                        f'{BACKEND_URL}/api/signalements',  # ← UTILISER BACKEND_URL
-                        json=signalement_data,
-                        timeout=30  # Augmenter le timeout
-                    )
-                    
-                    if response.status_code in [200, 201]:
-                        result = response.json()
-                        new_id = result.get('id')
-                        tx_hash = result.get('tx_hash')
-                        blockchain_url = result.get('blockchain_url')
-    
-                                # Ajout local
-                        # Définir le quartier
-                    nouveau_quartier = signalement_data.get('quartier', 'Quartier non spécifié')
-                    photo_data = None  
-                    st.session_state.signalements.append({
-                            'id': new_id,
-                            'type': st.session_state.selected_type,
-                            'quartier': nouveau_quartier,
-                            'date': datetime.datetime.now(),
-                            'statut': 'en_attente',
-                            'lat': signalement_data['latitude'],
-                            'lng': signalement_data['longitude'],
-                            'description': description,
-                            'tx_hash': tx_hash,
-                            'blockchain_url': blockchain_url,
-                            'has_photo': photo_data is not None if 'photo_data' in locals() else False
-                        })
-    
-                       # Affichage du succès avec le hash bien visible
-                    st.success(f"✅ Signalement enregistré avec succès !")
-    
-                       # AFFICHAGE CLAIR DU HASH DE TRANSACTION
-                    st.markdown("---")
-                    st.markdown("### 🔗 TRANSACTION BLOCKCHAIN")
-    
-                      # Afficher le hash complet
-                    st.markdown(f"**Hash de la transaction :**")
-                    st.code(f"{tx_hash}", language="text")
-    
-                       # Bouton pour copier le hash
-                    st.button(f"📋 Copier le hash", key="copy_hash")
-    
-                     # Lien Etherscan bien visible
-                    if blockchain_url:
-                        st.markdown(f"**🔍 Vérifier sur Etherscan :**")
-                        st.markdown(f"[{blockchain_url}]({blockchain_url})")
-    
-                        st.markdown("---")
-                        st.info("ℹ️ Ce hash est la preuve irréfutable de votre signalement sur la blockchain")
-    
-                        st.balloons()
-                        
-                        # Retour à l'accueil
-                        st.session_state.page = 'accueil'
-                        st.session_state.selected_type = None
-                        st.rerun()
                     else:
                         st.error(f"❌ Erreur: {response.status_code}")
                         
@@ -405,7 +367,225 @@ elif st.session_state.page == 'mes_signalements':
     if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
         st.session_state.page = 'nouveau_signalement'
         st.rerun()
-
+ PAGE NOUVEAU SIGNALEMENT
+elif st.session_state.page == 'nouveau_signalement':
+    st.markdown("## Nouveau signalement")
+    
+    if st.button("← Retour"):
+        st.session_state.page = 'accueil'
+        st.rerun()
+    
+    st.markdown("---")
+    
+    # ========== SECTION TYPE DE PROBLÈME ==========
+    st.markdown("### 🔄 TYPE DE PROBLÈME")
+    type_probleme = st.selectbox(
+        "Choisissez le type de problème",
+        ["Route", "Eau", "École", "Éclairage"],
+        index=None,
+        placeholder="Sélectionnez..."
+    )
+    if type_probleme:
+        st.session_state.selected_type = type_probleme
+        st.success(f"✅ Type sélectionné: {type_probleme}")
+    else:
+        st.info("👆 Veuillez sélectionner un type de problème")
+    
+    st.markdown("---")
+    
+    # ========== SECTION GÉOLOCALISATION ==========
+    st.markdown("### 📍 GÉOLOCALISATION")
+    
+    # Coordonnées par défaut (Abidjan)
+    default_lat = 5.3415
+    default_lng = -4.0142
+    
+    # Initialiser les coordonnées dans session_state
+    if 'selected_lat' not in st.session_state:
+        st.session_state.selected_lat = default_lat
+    if 'selected_lng' not in st.session_state:
+        st.session_state.selected_lng = default_lng
+    if 'show_map' not in st.session_state:
+        st.session_state.show_map = True
+    if 'show_manual' not in st.session_state:
+        st.session_state.show_manual = False
+    
+    # Trois colonnes pour les options de localisation
+    col_loc1, col_loc2, col_loc3 = st.columns(3)
+    
+    with col_loc1:
+        if st.button("📍 Ma position actuelle", use_container_width=True):
+            st.info("🔍 Cliquez sur 'Autoriser' dans la fenêtre du navigateur")
+            st.markdown("""
+            <script>
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        alert("Position détectée: " + lat.toFixed(6) + ", " + lng.toFixed(6));
+                        console.log("Lat: " + lat + " Lng: " + lng);
+                    },
+                    function(error) {
+                        alert("Erreur: " + error.message);
+                    }
+                );
+            } else {
+                alert("Géolocalisation non supportée");
+            }
+            </script>
+            """, unsafe_allow_html=True)
+    
+    with col_loc2:
+        if st.button("🗺️ Choisir sur la carte", use_container_width=True):
+            st.session_state.show_map = True
+            st.session_state.show_manual = False
+            st.rerun()
+    
+    with col_loc3:
+        if st.button("✏️ Saisir manuellement", use_container_width=True):
+            st.session_state.show_manual = True
+            st.session_state.show_map = False
+            st.rerun()
+    
+    # Carte interactive
+    if st.session_state.show_map:
+        st.markdown("**Cliquez sur la carte pour placer le marqueur**")
+        
+        m = folium.Map(location=[st.session_state.selected_lat, st.session_state.selected_lng], zoom_start=15)
+        
+        folium.Marker(
+            location=[st.session_state.selected_lat, st.session_state.selected_lng],
+            popup="📍 Position du signalement",
+            draggable=True,
+            icon=folium.Icon(color='red', icon='info-sign')
+        ).add_to(m)
+        
+        from folium.plugins import LocateControl
+        LocateControl().add_to(m)
+        
+        map_data = st_folium(m, width=700, height=400, key="location_map")
+        
+        if map_data and map_data.get('last_clicked'):
+            st.session_state.selected_lat = map_data['last_clicked']['lat']
+            st.session_state.selected_lng = map_data['last_clicked']['lng']
+            st.success(f"📍 Position mise à jour: {st.session_state.selected_lat:.4f}, {st.session_state.selected_lng:.4f}")
+            st.rerun()
+    
+    # Saisie manuelle
+    if st.session_state.show_manual:
+        st.markdown("**Saisissez les coordonnées manuellement**")
+        
+        col_man1, col_man2 = st.columns(2)
+        with col_man1:
+            manual_lat = st.number_input(
+                "Latitude",
+                value=st.session_state.selected_lat,
+                format="%.6f",
+                step=0.0001,
+                key="manual_lat"
+            )
+        with col_man2:
+            manual_lng = st.number_input(
+                "Longitude",
+                value=st.session_state.selected_lng,
+                format="%.6f",
+                step=0.0001,
+                key="manual_lng"
+            )
+        
+        col_btn_man1, col_btn_man2 = st.columns(2)
+        with col_btn_man1:
+            if st.button("✅ Valider", use_container_width=True):
+                st.session_state.selected_lat = manual_lat
+                st.session_state.selected_lng = manual_lng
+                st.session_state.show_manual = False
+                st.session_state.show_map = True
+                st.success(f"📍 Coordonnées enregistrées: {manual_lat}, {manual_lng}")
+                st.rerun()
+        with col_btn_man2:
+            if st.button("❌ Annuler", use_container_width=True):
+                st.session_state.show_manual = False
+                st.session_state.show_map = True
+                st.rerun()
+    
+    # Affichage des coordonnées actuelles
+    st.info(f"📍 **Position actuelle :** {st.session_state.selected_lat:.6f}, {st.session_state.selected_lng:.6f}")
+    
+    # Mini carte de prévisualisation
+    preview_map = folium.Map(location=[st.session_state.selected_lat, st.session_state.selected_lng], zoom_start=14, height=200)
+    folium.Marker(
+        [st.session_state.selected_lat, st.session_state.selected_lng],
+        popup="Position sélectionnée",
+        icon=folium.Icon(color='green')
+    ).add_to(preview_map)
+    st_folium(preview_map, width=400, height=200, key="preview_map")
+    
+    st.markdown("---")
+    
+    # ========== SECTION PHOTO (CAMÉRA DÉSACTIVÉE PAR DÉFAUT) ==========
+    st.markdown("### 📸 PHOTO")
+    
+    # Initialiser l'état de la caméra
+    if 'camera_enabled' not in st.session_state:
+        st.session_state.camera_enabled = False
+    
+    # Bouton pour activer la caméra
+    col_btn_cam, col_btn_up = st.columns(2)
+    
+    with col_btn_cam:
+        if st.button("📷 Activer la caméra", use_container_width=True):
+            st.session_state.camera_enabled = True
+            st.rerun()
+    
+    with col_btn_up:
+        st.markdown("**Ou**")
+    
+    # Caméra (affichée seulement si activée)
+    photo_data = None
+    
+    if st.session_state.camera_enabled:
+        st.markdown("**📷 Prendre une photo**")
+        camera_photo = st.camera_input("Prenez une photo", label_visibility="collapsed", key="camera_photo")
+        if camera_photo:
+            photo_data = camera_photo
+            st.success("✅ Photo prise avec succès !")
+            
+            # Option pour désactiver la caméra après la photo
+            if st.button("🔒 Désactiver la caméra", use_container_width=True):
+                st.session_state.camera_enabled = False
+                st.rerun()
+    
+    # Upload de photo (toujours disponible)
+    st.markdown("**📁 Upload depuis galerie**")
+    uploaded_file = st.file_uploader(
+        "Choisissez une photo",
+        type=['jpg', 'jpeg', 'png', 'webp'],
+        label_visibility="collapsed",
+        key="upload_photo"
+    )
+    if uploaded_file:
+        photo_data = uploaded_file
+        st.success("✅ Photo uploadée avec succès !")
+    
+    # Aperçu de la photo
+    if photo_data:
+        st.markdown("**📸 Aperçu :**")
+        st.image(photo_data, width=300)
+    else:
+        st.info("💡 Vous pouvez ajouter une photo (optionnel)")
+    
+    st.markdown("---")
+    
+    # ========== DESCRIPTION ==========
+    st.markdown("### 📝 DESCRIPTION")
+    description = st.text_area(
+        "Description (optionnelle)",
+        placeholder="Décrivez le problème...",
+        height=100
+    )
+    
+    st.markdown("---")
 # PAGE PROFIL
 elif st.session_state.page == 'profil':
     st.markdown("## 👤 Mon profil")
