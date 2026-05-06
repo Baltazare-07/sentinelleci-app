@@ -311,7 +311,9 @@ elif st.session_state.page == 'nouveau_signalement':
                         blockchain_url = result.get('blockchain_url')
     
                                 # Ajout local
-                        st.session_state.signalements.append({
+                        # Définir le quartier
+                    nouveau_quartier = signalement_data.get('quartier', 'Quartier non spécifié')
+                    st.session_state.signalements.append({
                             'id': new_id,
                             'type': st.session_state.selected_type,
                             'quartier': nouveau_quartier,
