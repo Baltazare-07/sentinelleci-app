@@ -328,7 +328,7 @@ elif st.session_state.page == 'nouveau_signalement':
                         })
     
                        # Affichage du succès avec le hash bien visible
-                        st.success(f"✅ Signalement enregistré avec succès !")
+                    st.success(f"✅ Signalement enregistré avec succès !")
     
                        # AFFICHAGE CLAIR DU HASH DE TRANSACTION
                         st.markdown("---")
