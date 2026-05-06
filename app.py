@@ -319,12 +319,7 @@ elif st.session_state.page == 'mes_signalements':
                    st.session_state.page = 'nouveau_signalement'
                    st.rerun()
                 else:
-                        st.error(f"❌ Erreur: {response.status_code}")
-                        
-        elif requests.exceptions.ConnectionError:
-               st.error("❌ Impossible de se connecter au backend. Vérifiez que le serveur tourne sur le port 3001")
-        elif Exception as e:
-               st.error(f"❌ Erreur: {str(e)}")
+                    st.error(f"❌ Erreur: {response.status_code}")
 
 # PAGE MES SIGNALEMENTS
 elif st.session_state.page == 'mes_signalements':
@@ -586,6 +581,93 @@ elif st.session_state.page == 'nouveau_signalement':
     )
     
     st.markdown("---")
+
+  
+    # ========== ACCEPTATION BLOCKCHAIN ==========
+    st.markdown("### 🔗 BLOCKCHAIN")
+    accept = st.checkbox("✅ J'accepte la publication sur blockchain (immuable)")
+    
+    st.markdown("---")
+    
+    # ========== BOUTON DE SOUMISSION ==========
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+    with col_btn2:
+        submitted = st.button("🚀 SIGNALER SUR BLOCKCHAIN", use_container_width=True, type="primary")
+    
+    if submitted:
+        if not accept:
+            st.error("⚠️ Veuillez accepter la publication sur blockchain")
+        elif not st.session_state.selected_type:
+            st.error("⚠️ Veuillez sélectionner un type de problème")
+        else:
+            # Préparation des données
+            signalement_data = {
+                'type': st.session_state.selected_type,
+                'description': description,
+                'quartier': "Nouveau quartier",
+                'latitude': st.session_state.selected_lat,
+                'longitude': st.session_state.selected_lng
+            }
+            
+            try:
+                with st.spinner("⏳ Enregistrement sur la blockchain en cours..."):
+                    response = requests.post(
+                        'https://backend-37po.onrender.com',
+                        json=signalement_data,
+                        timeout=30
+                    )
+                    
+                    if response.status_code in [200, 201]:
+                        result = response.json()
+                        new_id = result.get('id')
+                        tx_hash = result.get('tx_hash')
+                        blockchain_url = result.get('blockchain_url')
+                        
+                        # Ajout local
+                        st.session_state.signalements.append({
+                            'id': new_id,
+                            'type': st.session_state.selected_type,
+                            'quartier': "Nouveau quartier",
+                            'date': datetime.datetime.now(),
+                            'statut': 'en_attente',
+                            'lat': signalement_data['latitude'],
+                            'lng': signalement_data['longitude'],
+                            'description': description,
+                            'tx_hash': tx_hash,
+                            'blockchain_url': blockchain_url,
+                            'has_photo': photo_data is not None
+                        })
+                        
+                        st.success(f"✅ Signalement enregistré avec succès !")
+                        short_hash = tx_hash[:20] + '...' if len(tx_hash) > 20 else tx_hash
+                        st.markdown(f"🔗 **Hash transaction:** `{short_hash}`")
+                        
+                        if blockchain_url:
+                            st.markdown(f"[🔍 **Vérifier sur Etherscan**]({blockchain_url})")
+                        
+                        if photo_data:
+                            st.markdown("### 📸 Photo du signalement")
+                            st.image(photo_data, width=300)
+                        
+                        st.balloons()
+                        
+                        # Reset
+                        st.session_state.show_map = True
+                        st.session_state.show_manual = False
+                        st.session_state.camera_enabled = False
+                        st.session_state.page = 'accueil'
+                        st.session_state.selected_type = None
+                        st.rerun()
+                    else:
+                        st.error(f"❌ Erreur: {response.status_code}")
+                        
+            except requests.exceptions.ConnectionError:
+                st.error("❌ Impossible de se connecter au backend. Vérifiez que le serveur tourne sur le port 3001")
+            except Exception as e:
+                st.error(f"❌ Erreur: {str(e)}")
+
+
+
 # PAGE PROFIL
 elif st.session_state.page == 'profil':
     st.markdown("## 👤 Mon profil")
