@@ -394,22 +394,22 @@ else:
         default_lng = -4.0142
     
     # Initialiser les coordonnées dans session_state
-    if 'selected_lat' not in st.session_state:
-        st.session_state.selected_lat = default_lat
-    if 'selected_lng' not in st.session_state:
-        st.session_state.selected_lng = default_lng
-    if 'show_map' not in st.session_state:
-        st.session_state.show_map = True
-    if 'show_manual' not in st.session_state:
-        st.session_state.show_manual = False
+        if 'selected_lat' not in st.session_state:
+            st.session_state.selected_lat = default_lat
+        if 'selected_lng' not in st.session_state:
+            st.session_state.selected_lng = default_lng
+        if 'show_map' not in st.session_state:
+            st.session_state.show_map = True
+        if 'show_manual' not in st.session_state:
+            st.session_state.show_manual = False
     
     # Trois colonnes pour les options de localisation
-    col_loc1, col_loc2, col_loc3 = st.columns(3)
+        col_loc1, col_loc2, col_loc3 = st.columns(3)
     
-    with col_loc1:
-        if st.button("📍 Ma position actuelle", use_container_width=True):
-            st.info("🔍 Cliquez sur 'Autoriser' dans la fenêtre du navigateur")
-            st.markdown("""
+        with col_loc1:
+            if st.button("📍 Ma position actuelle", use_container_width=True):
+                st.info("🔍 Cliquez sur 'Autoriser' dans la fenêtre du navigateur")
+                st.markdown("""
             <script>
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
