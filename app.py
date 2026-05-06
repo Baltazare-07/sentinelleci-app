@@ -679,8 +679,8 @@ elif st.session_state.page == 'mairie':
     col_left, col_right = st.columns([2, 1])
     
     with col_left:
-    st.markdown("### 🚨 SIGNALEMENTS NON PRIS EN CHARGE")
-    non_pris = [s for s in st.session_state.signalements if s.get('statut') == 'en_attente']
+        st.markdown("### 🚨 SIGNALEMENTS NON PRIS EN CHARGE")
+        non_pris = [s for s in st.session_state.signalements if s.get('statut') == 'en_attente']
     
     if non_pris:
         for i, s in enumerate(non_pris):
