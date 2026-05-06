@@ -322,9 +322,9 @@ elif st.session_state.page == 'mes_signalements':
                         st.error(f"❌ Erreur: {response.status_code}")
                         
             except requests.exceptions.ConnectionError:
-                st.error("❌ Impossible de se connecter au backend. Vérifiez que le serveur tourne sur le port 3001")
+                   st.error("❌ Impossible de se connecter au backend. Vérifiez que le serveur tourne sur le port 3001")
             except Exception as e:
-                st.error(f"❌ Erreur: {str(e)}")
+                   st.error(f"❌ Erreur: {str(e)}")
 
 # PAGE MES SIGNALEMENTS
 elif st.session_state.page == 'mes_signalements':
