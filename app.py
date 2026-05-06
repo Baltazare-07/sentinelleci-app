@@ -655,11 +655,72 @@ elif st.session_state.page == 'mairie':
     st.markdown(f"**Mise à jour : {datetime.datetime.now().strftime('%H:%M:%S')}**")
     st.markdown("---")
     
+    # ========== CARTE DES SIGNALEMENTS (AJOUTÉE) ==========
+    st.markdown("### 🗺️ CARTE DES SIGNALEMENTS")
+    st.markdown("Visualisation de tous les signalements sur la commune")
+    
+    # Créer une carte pour la mairie
+    mairie_map = folium.Map(location=[5.3415, -4.0142], zoom_start=12)
+    colors = {'en_attente': 'red', 'en_cours': 'orange', 'resolu': 'green'}
+    
+    for s in st.session_state.signalements:
+        try:
+            if not s.get('lat') or not s.get('lng'):
+                continue
+            
+            # Gestion sécurisée de l'ID
+            signal_id = s.get('id')
+            if signal_id is None:
+                signal_id = "ID_inconnu"
+            else:
+                signal_id = str(signal_id)
+            
+            # Gestion du hash
+            tx_hash = s.get('tx_hash')
+            if tx_hash and str(tx_hash).startswith('0x'):
+                etherscan_url = f"https://sepolia.etherscan.io/tx/{tx_hash}"
+                short_id = signal_id[:20] + '...' if len(signal_id) > 20 else signal_id
+                popup_html = f"""
+                <div style="font-family: sans-serif; min-width: 250px;">
+                    <b>{s.get('type', 'Inconnu')}</b><br>
+                    📍 {s.get('quartier', 'Inconnu')}<br>
+                    🆔 {short_id}<br>
+                    📅 {s.get('date', 'Date inconnue')}<br>
+                    <span style="color: {colors.get(s.get('statut', 'en_attente'), 'gray')}; font-weight: bold;">
+                        {s.get('statut', 'en_attente').upper()}
+                    </span><br>
+                    🔗 <a href='{etherscan_url}' target='_blank'>Voir sur Etherscan</a>
+                </div>
+                """
+            else:
+                popup_html = f"""
+                <div style="font-family: sans-serif; min-width: 200px;">
+                    <b>{s.get('type', 'Inconnu')}</b><br>
+                    📍 {s.get('quartier', 'Inconnu')}<br>
+                    📅 {s.get('date', 'Date inconnue')}<br>
+                    <span style="color: {colors.get(s.get('statut', 'en_attente'), 'gray')};">
+                        {s.get('statut', 'en_attente').upper()}
+                    </span>
+                </div>
+                """
+            
+            folium.Marker(
+                location=[s['lat'], s['lng']],
+                popup=folium.Popup(popup_html, max_width=300),
+                icon=folium.Icon(color=colors.get(s.get('statut', 'en_attente'), 'gray'))
+            ).add_to(mairie_map)
+            
+        except Exception as e:
+            continue
+    
+    st_folium(mairie_map, width=900, height=500, key="mairie_map")
+    st.markdown("---")
+    
     # Calcul des stats
     total = len(st.session_state.signalements)
-    en_attente = len([s for s in st.session_state.signalements if s['statut'] == 'en_attente'])
-    en_cours = len([s for s in st.session_state.signalements if s['statut'] == 'en_cours'])
-    resolus = len([s for s in st.session_state.signalements if s['statut'] == 'resolu'])
+    en_attente = len([s for s in st.session_state.signalements if s.get('statut') == 'en_attente'])
+    en_cours = len([s for s in st.session_state.signalements if s.get('statut') == 'en_cours'])
+    resolus = len([s for s in st.session_state.signalements if s.get('statut') == 'resolu'])
     
     # Indicateurs clés
     col1, col2, col3, col4 = st.columns(4)
@@ -681,42 +742,39 @@ elif st.session_state.page == 'mairie':
     with col_left:
         st.markdown("### 🚨 SIGNALEMENTS NON PRIS EN CHARGE")
         non_pris = [s for s in st.session_state.signalements if s.get('statut') == 'en_attente']
-    
-    if non_pris:
-        for i, s in enumerate(non_pris):
-            # Gestion sécurisée de la date
-            if isinstance(s.get('date'), datetime.datetime):
-                date_str = s['date'].strftime('%d/%m/%Y')
-            else:
-                date_str = str(s.get('date', 'Date inconnue'))[:10]
-            
-            # Gestion sécurisée du type et quartier
-            signalement_type = s.get('type', 'Type inconnu')
-            signalement_quartier = s.get('quartier', 'Quartier inconnu')
-            
-            signalement_id = f"SIG-ABJ-2026-{str(i+1).zfill(3)}"
-            
-            col_id, col_type, col_quartier, col_date, col_action = st.columns([1.5, 1, 1, 1, 1])
-            with col_id:
-                st.write(f"**{signalement_id}**")
-            with col_type:
-                st.write(signalement_type)
-            with col_quartier:
-                st.write(signalement_quartier)
-            with col_date:
-                st.write(date_str)
-            with col_action:
-                if st.button("📋 PRENDRE", key=f"prendre_mairie_{i}"):
-                    st.session_state.selected_signalement = s
-                    st.session_state.show_prise_en_charge = True
-                    st.rerun()
-            st.divider()
-    else:
-        st.info("✅ Aucun signalement en attente")
+        
+        if non_pris:
+            for i, s in enumerate(non_pris):
+                # Gestion sécurisée de la date
+                if isinstance(s.get('date'), datetime.datetime):
+                    date_str = s['date'].strftime('%d/%m/%Y')
+                else:
+                    date_str = str(s.get('date', 'Date inconnue'))[:10]
+                
+                signalement_type = s.get('type', 'Type inconnu')
+                signalement_quartier = s.get('quartier', 'Quartier inconnu')
+                signalement_id = f"SIG-ABJ-2026-{str(i+1).zfill(3)}"
+                
+                col_id, col_type, col_quartier, col_date, col_action = st.columns([1.5, 1, 1, 1, 1])
+                with col_id:
+                    st.write(f"**{signalement_id}**")
+                with col_type:
+                    st.write(signalement_type)
+                with col_quartier:
+                    st.write(signalement_quartier)
+                with col_date:
+                    st.write(date_str)
+                with col_action:
+                    if st.button("📋 PRENDRE", key=f"prendre_mairie_{i}"):
+                        st.session_state.selected_signalement = s
+                        st.session_state.show_prise_en_charge = True
+                        st.rerun()
+                st.divider()
+        else:
+            st.info("✅ Aucun signalement en attente")
     
     with col_right:
         st.markdown("### 📊 RÉPARTITION")
-        total = len(st.session_state.signalements)
         if total > 0:
             st.markdown(f"""
             **Total:** {total}  
@@ -726,7 +784,7 @@ elif st.session_state.page == 'mairie':
             """)
             
             # Barre de progression
-            st.progress(en_attente/total, text="Taux de résolution")
+            st.progress(en_attente/total if total > 0 else 0, text="Taux de résolution")
         
         st.markdown("---")
         st.markdown("### 👥 Agents terrain")
@@ -736,12 +794,7 @@ elif st.session_state.page == 'mairie':
         - 👤 Kouadio L. (1 intervention)
         """)
     
-    # Section Prise en charge
-    if st.session_state.show_prise_en_charge and st.session_state.get('selected_signalement'):
-        st.markdown("---")
-        st.markdown("## 📋 PRISE EN CHARGE D'UN SIGNALEMENT")
-        
-            # Section Prise en charge
+    # Section Prise en charge (inchangée, mais sécurisée)
     if st.session_state.show_prise_en_charge and st.session_state.get('selected_signalement'):
         st.markdown("---")
         st.markdown("## 📋 PRISE EN CHARGE D'UN SIGNALEMENT")
@@ -762,7 +815,6 @@ elif st.session_state.page == 'mairie':
             signalement_id = str(signalement_id)
         short_id = signalement_id[:16] + '...' if len(signalement_id) > 16 else signalement_id
         
-        # Gestion sécurisée du type et quartier
         signalement_type = s.get('type', 'Type inconnu')
         signalement_quartier = s.get('quartier', 'Quartier inconnu')
         
@@ -797,5 +849,6 @@ elif st.session_state.page == 'mairie':
                 if st.button("❌ ANNULER", use_container_width=True):
                     st.session_state.show_prise_en_charge = False
                     st.session_state.selected_signalement = None
+                    st.rerun()
                     st.rerun()
 st.caption(f"© 2026 Sentinelle.CI - Plateforme citoyenne | Connected to Blockchain")
