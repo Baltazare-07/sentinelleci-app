@@ -180,24 +180,35 @@ def create_map():
     colors = {'en_attente': 'red', 'en_cours': 'orange', 'resolu': 'green'}
     
     for s in st.session_state.signalements:
-        if s.get('tx_hash') and s['tx_hash'].startswith('0x'):
+        # Gestion sécurisée de l'ID
+        signal_id = s.get('id')
+        
+        # Si l'ID n'existe pas ou n'est pas une chaîne, créer un ID temporaire
+        if signal_id is None:
+            signal_id = f"signal_{id(s)}"  # ID basé sur l'adresse mémoire
+        elif not isinstance(signal_id, str):
+            signal_id = str(signal_id)  # Convertir en chaîne
+        
+        # Gestion sécurisée du hash de transaction
+        if s.get('tx_hash') and isinstance(s.get('tx_hash'), str) and s['tx_hash'].startswith('0x'):
             etherscan_url = f"https://sepolia.etherscan.io/tx/{s['tx_hash']}"
-            short_id = s['id'][:20] + '...' if len(s['id']) > 20 else s['id']
+            short_id = signal_id[:20] + '...' if len(signal_id) > 20 else signal_id
             popup_html = f"""
             <div style="font-family: sans-serif; min-width: 200px;">
-                <b>{s['type']}</b><br>
-                📍 {s['quartier']}<br>
+                <b>{s.get('type', 'Inconnu')}</b><br>
+                📍 {s.get('quartier', 'Inconnu')}<br>
                 🆔 {short_id}<br>
                 🔗 <a href='{etherscan_url}' target='_blank'>Voir sur Etherscan</a>
             </div>
             """
         else:
-            popup_html = f"{s['type']} - {s['quartier']}"
+            short_id = signal_id[:20] + '...' if len(signal_id) > 20 else signal_id
+            popup_html = f"{s.get('type', 'Inconnu')} - {s.get('quartier', 'Inconnu')}"
         
         folium.Marker(
             location=[s['lat'], s['lng']],
             popup=folium.Popup(popup_html, max_width=300),
-            icon=folium.Icon(color=colors.get(s['statut'], 'gray'))
+            icon=folium.Icon(color=colors.get(s.get('statut', 'en_attente'), 'gray'))
         ).add_to(m)
     return m
 
