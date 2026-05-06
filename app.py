@@ -384,10 +384,10 @@ if type_probleme:
 else:
         st.info("👆 Veuillez sélectionner un type de problème")
     
-         st.markdown("---")
+        st.markdown("---")
     
     # ========== SECTION GÉOLOCALISATION ==========
-    st.markdown("### 📍 GÉOLOCALISATION")
+        st.markdown("### 📍 GÉOLOCALISATION")
     
     # Coordonnées par défaut (Abidjan)
     default_lat = 5.3415
