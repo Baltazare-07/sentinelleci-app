@@ -364,9 +364,6 @@ elif st.session_state.page == 'mes_signalements':
         st.rerun()
  
 s#PAGE NOUVEAU SIGNALEMENT
-elif st.session_state.page == 'nouveau_signalement':
-    st.markdown("## Nouveau signalement")
-    
     if st.button("← Retour"):
         st.session_state.page = 'accueil'
         st.rerun()
