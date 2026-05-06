@@ -362,7 +362,8 @@ elif st.session_state.page == 'mes_signalements':
     if st.button("➕ NOUVEAU SIGNALEMENT", use_container_width=True):
         st.session_state.page = 'nouveau_signalement'
         st.rerun()
- PAGE NOUVEAU SIGNALEMENT
+ 
+s#PAGE NOUVEAU SIGNALEMENT
 elif st.session_state.page == 'nouveau_signalement':
     st.markdown("## Nouveau signalement")
     
